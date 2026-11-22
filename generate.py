@@ -31,7 +31,11 @@ def fetch(label=None, n=60):
         else:
             m = re.search(r'<img[^>]+src="([^"]+)"', content)
             img = m.group(1) if m else ""
-        text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", content))).strip()
+        body = re.sub(r"(?is)<(style|script)\b.*?</\1>", " ", content)
+        text = html.unescape(re.sub(r"<[^>]+>", " ", body))
+        if "{" in text:
+            text = re.sub(r"[^{}]*\{[^{}]*\}", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
         posts.append(dict(title=e["title"]["$t"].strip(), link=link, img=img, text=text,
                           time=dt.datetime.fromisoformat(e["published"]["$t"])))
     posts.sort(key=lambda p: p["time"], reverse=True)
