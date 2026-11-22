@@ -6,7 +6,11 @@ from zoneinfo import ZoneInfo
 
 BLOG = "https://fountnews24.blogspot.com"
 # (পাতার নাম, Blogger লেবেল; None = সব খবর থেকে)। লেবেলের বানান ব্লগের লেবেলের সঙ্গে হুবহু মিলতে হবে।
-PAGES = [("প্রথম পাতা", None), ("জাতীয়", "National"), ("রাজনীতি", "Politics"), ("আন্তর্জাতিক", "World")]
+PAGES = [  # (পাতার নাম, Blogger লেবেল; None = সব খবর, ক'ঘণ্টার খবর নেবে)
+    ("প্রথম পাতা", None, 24), ("জাতীয়", "National", 24), ("রাজনীতি", "Politics", 24),
+    ("আন্তর্জাতিক", "World", 24), ("খেলা", "Sports", 24), ("মতামত", "Opinion", 72),
+    ("ইসলাম", "Islam", 48), ("সম্পাদকীয়", "Editorial", 72),
+]
 KEEP_DAYS = 60
 TZ = ZoneInfo("Asia/Dhaka")
 ROOT = Path(__file__).parent
@@ -41,8 +45,8 @@ def fetch(label=None, n=60):
     posts.sort(key=lambda p: p["time"], reverse=True)
     return posts
 
-def recent(posts):
-    cut = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
+def recent(posts, hours=24):
+    cut = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=hours)
     r = [p for p in posts if p["time"] >= cut]
     return r if len(r) >= 3 else posts[:7]
 
@@ -150,8 +154,8 @@ def render(day, pages, folder):
 def main():
     day = dt.datetime.now(TZ).strftime("%Y-%m-%d")
     allp, used, pages = recent(fetch()), set(), []
-    for name, label in PAGES:
-        src = allp if label is None else recent(fetch(label))
+    for name, label, hrs in PAGES:
+        src = allp if label is None else recent(fetch(label), hrs)
         pool = [p for p in src if p["link"] not in used] or src
         pick = pool[:7]
         used.update(p["link"] for p in pick)
