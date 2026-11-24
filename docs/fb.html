@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>ফেসবুক পোস্ট</title>
+<style>body{margin:0;padding:16px;font-family:'SolaimanLipi','Noto Sans Bengali',sans-serif;background:#f2f0ee;color:#151515;max-width:720px;margin:0 auto}
+h1{font-size:22px;color:#c8102e}textarea{width:100%;height:290px;font:inherit;font-size:16px;padding:12px;border:1px solid #ccc;border-radius:10px}
+button{font:inherit;font-size:16px;padding:11px 18px;margin:8px 8px 0 0;border:0;border-radius:10px;background:#c8102e;color:#fff;cursor:pointer}
+figure{margin:16px 0;background:#fff;padding:8px;border-radius:10px}figure img{width:100%;display:block}figure a{display:inline-block;margin-top:6px;color:#c8102e}
+#m{margin-top:8px;color:#0a6}</style></head><body>
+<h1>আজকের ফেসবুক পোস্ট (2026-11-24)</h1>
+<textarea id="c" readonly>📰 আজকের ই-পেপার | ২৪ নভেম্বর ২০২৬
+
+আজকের উল্লেখযোগ্য খবর:
+▪ জাতীয়: রূপপুর পারমাণবিক বিদ্যুৎকেন্দ্র থেকে দ্বিতীয় দফায় গ্রিডে বিদ্যুৎ সরবরাহ শুরু
+▪ রাজনীতি: ১৬ ডিসেম্বর শেখ হাসিনার দেশে ফেরা ও বাস্তবতা এক নয়: পররাষ্ট্র প্রতিমন্ত্রী
+▪ আন্তর্জাতিক: সন্ত্রাসবাদ নিয়ে আলোচনা প্রমাণের ভিত্তিতে হওয়া উচিত: মুসাদ্দিক মালিক
+▪ খেলা: অলিম্পিক ক্রিকেটের বাছাইপর্ব বাংলাদেশে আয়োজনের পরিকল্পনা বিসিবির
+
+জাতীয়, রাজনীতি, আন্তর্জাতিক, খেলা, মতামত, ইসলাম ও সম্পাদকীয়—দিনের পূর্ণ সংখ্যা এক জায়গায়।
+ফাউন্ট নিউজ ওয়েবসাইটের ই-পেপার বাটনে চাপলে প্রতিটি খবর পুরোটা পড়তে পারবেন।
+
+#FountNews #ই_পেপার</textarea>
+<button id="cp">ক্যাপশন কপি করুন</button><button id="sh">ছবিসহ শেয়ার করুন</button><div id="m"></div>
+<h1>ছবি</h1><figure><img src="2026-11-24/fb-cover.png" loading="lazy" alt=""><a href="2026-11-24/fb-cover.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-1.png" loading="lazy" alt=""><a href="2026-11-24/page-1.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-2.png" loading="lazy" alt=""><a href="2026-11-24/page-2.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-3.png" loading="lazy" alt=""><a href="2026-11-24/page-3.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-4.png" loading="lazy" alt=""><a href="2026-11-24/page-4.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-5.png" loading="lazy" alt=""><a href="2026-11-24/page-5.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-6.png" loading="lazy" alt=""><a href="2026-11-24/page-6.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-7.png" loading="lazy" alt=""><a href="2026-11-24/page-7.png" download>ডাউনলোড</a></figure><figure><img src="2026-11-24/page-8.png" loading="lazy" alt=""><a href="2026-11-24/page-8.png" download>ডাউনলোড</a></figure>
+<script>
+var C=document.getElementById('c'),M=document.getElementById('m');
+document.getElementById('cp').onclick=function(){C.select();(navigator.clipboard?navigator.clipboard.writeText(C.value):Promise.reject()).then(function(){M.textContent='কপি হয়েছে'}).catch(function(){document.execCommand('copy');M.textContent='কপি হয়েছে'})};
+document.getElementById('sh').onclick=function(){
+var us=[...document.querySelectorAll('figure img')].slice(0,5).map(function(i){return i.src});
+Promise.all(us.map(function(u,k){return fetch(u).then(function(r){return r.blob()}).then(function(b){return new File([b],'fountnews-'+k+'.png',{type:'image/png'})})})).then(function(fs){
+if(navigator.canShare&&navigator.canShare({files:fs})){try{navigator.clipboard.writeText(C.value)}catch(e){};return navigator.share({files:fs,text:C.value})}
+M.textContent='এই ব্রাউজারে শেয়ার চলবে না, ছবি ডাউনলোড করে নিন'}).catch(function(){})};
+</script></body></html>
