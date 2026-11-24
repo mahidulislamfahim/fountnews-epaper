@@ -252,6 +252,90 @@ def render(day, pages, folder):
         f.unlink()
     return hot
 
+def fb_caption(day, pages):
+    d = dt.date.fromisoformat(day)
+    lines = [f"📰 আজকের ই-পেপার | {bn(d.day)} {MONTHS[d.month - 1]} {bn(d.year)}", ""]
+    picks = [(n, p[0]) for n, p in pages[1:] if p][:4]
+    if picks:
+        lines += ["আজকের উল্লেখযোগ্য খবর:"] + [f"▪ {n}: {clip(p['title'], 85)}" for n, p in picks] + [""]
+    lines += ["জাতীয়, রাজনীতি, আন্তর্জাতিক, খেলা, মতামত, ইসলাম ও সম্পাদকীয়—দিনের পূর্ণ সংখ্যা এক জায়গায়।",
+              "ফাউন্ট নিউজ ওয়েবসাইটের ই-পেপার বাটনে চাপলে প্রতিটি খবর পুরোটা পড়তে পারবেন।", "",
+              "#FountNews #ই_পেপার"]
+    return "\n".join(lines)
+
+def fb_card_html(day, pages):
+    d = dt.date.fromisoformat(day)
+    first = pages[0][1] if pages else []
+    lead = next((p for p in first if p["img"]), first[0] if first else None)
+    more = [(n, p[0]) for n, p in pages[1:] if p][:4]
+    hero = ""
+    if lead:
+        im = f'<img class="him" src="{E(lead["img"])}" alt="" onerror="this.style.display=\'none\'">' if lead["img"] else ""
+        hero = f'<div class="hero">{im}<div class="badge">প্রধান খবর</div><h1>{E(clip(lead["title"], 120))}</h1></div>'
+    items = "".join(f'<div class="it"><span class="tag">{E(n)}</span><span class="t">{E(clip(p["title"], 90))}</span></div>' for n, p in more)
+    lst = f'<div class="list"><h4>আজকের আরও খবর</h4>{items}</div>' if items else '<div class="list"></div>'
+    css = """*{box-sizing:border-box}body{margin:0;font-family:'SolaimanLipi','Noto Sans Bengali',sans-serif}
+.card{width:1080px;height:1350px;display:flex;flex-direction:column;background:#fff;border-top:16px solid #c8102e;overflow:hidden}
+.top{height:150px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;flex:none}
+.top img{height:96px}.top div{text-align:right;font-size:30px;color:#444;line-height:1.4}.top b{display:block;font-size:36px;color:#151515}
+.hero{position:relative;height:580px;background:linear-gradient(135deg,#3a0a12,#c8102e);flex:none}
+.him{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.hero:after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(transparent 38%,rgba(0,0,0,.88))}
+.hero h1{position:absolute;left:48px;right:48px;bottom:34px;margin:0;color:#fff;font-size:58px;line-height:1.3;font-weight:700;z-index:2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.badge{position:absolute;top:26px;left:48px;z-index:2;background:#c8102e;color:#fff;padding:6px 24px;font-size:30px;font-weight:700}
+.list{flex:1;padding:26px 48px 0;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.list h4{margin:0;font-size:34px;color:#c8102e;border-bottom:3px solid #c8102e;padding-bottom:6px}
+.it{display:flex;gap:16px;align-items:flex-start;border-bottom:1px solid #ddd;padding-bottom:14px}
+.tag{flex:none;background:#151515;color:#fff;font-size:24px;padding:4px 14px;border-radius:4px;margin-top:6px}
+.t{font-size:34px;line-height:1.38;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.foot{flex:none;height:116px;background:#c8102e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700}"""
+    return (f'<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><style>{FONTS}{css}</style></head><body><div class="card">'
+            f'<div class="top"><img src="{logo_uri()}" alt=""><div><b>আজকের ই-পেপার</b>{DAYS[d.weekday()]}, {bn(d.day)} {MONTHS[d.month - 1]} {bn(d.year)}</div></div>'
+            f'{hero}{lst}<div class="foot">প্রতিটি খবর পড়ুন ফাউন্ট নিউজের ই-পেপারে</div></div></body></html>')
+
+def make_fb(day, pages, folder):
+    from playwright.sync_api import sync_playwright
+    cap = fb_caption(day, pages)
+    (folder / "facebook.txt").write_text(cap, encoding="utf-8")
+    tmp = folder / "_fb.html"
+    tmp.write_text(fb_card_html(day, pages), encoding="utf-8")
+    with sync_playwright() as pw:
+        b = pw.chromium.launch()
+        pg = b.new_page(viewport={"width": 1080, "height": 1350})
+        pg.goto(tmp.resolve().as_uri(), wait_until="networkidle")
+        pg.evaluate("document.fonts.ready")
+        try:
+            pg.wait_for_function("[...document.images].every(i=>i.complete)", timeout=15000)
+        except Exception:
+            pass
+        pg.screenshot(path=str(folder / "fb-cover.png"))
+        b.close()
+    tmp.unlink()
+    n = len(pages)
+    imgs = [f"{day}/fb-cover.png"] + [f"{day}/page-{i + 1}.png" for i in range(n)]
+    gal = "".join(f'<figure><img src="{u}" loading="lazy" alt=""><a href="{u}" download>ডাউনলোড</a></figure>' for u in imgs)
+    page = f"""<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>ফেসবুক পোস্ট</title>
+<style>body{{margin:0;padding:16px;font-family:'SolaimanLipi','Noto Sans Bengali',sans-serif;background:#f2f0ee;color:#151515;max-width:720px;margin:0 auto}}
+h1{{font-size:22px;color:#c8102e}}textarea{{width:100%;height:290px;font:inherit;font-size:16px;padding:12px;border:1px solid #ccc;border-radius:10px}}
+button{{font:inherit;font-size:16px;padding:11px 18px;margin:8px 8px 0 0;border:0;border-radius:10px;background:#c8102e;color:#fff;cursor:pointer}}
+figure{{margin:16px 0;background:#fff;padding:8px;border-radius:10px}}figure img{{width:100%;display:block}}figure a{{display:inline-block;margin-top:6px;color:#c8102e}}
+#m{{margin-top:8px;color:#0a6}}</style></head><body>
+<h1>আজকের ফেসবুক পোস্ট ({E(day)})</h1>
+<textarea id="c" readonly>{E(cap)}</textarea>
+<button id="cp">ক্যাপশন কপি করুন</button><button id="sh">ছবিসহ শেয়ার করুন</button><div id="m"></div>
+<h1>ছবি</h1>{gal}
+<script>
+var C=document.getElementById('c'),M=document.getElementById('m');
+document.getElementById('cp').onclick=function(){{C.select();(navigator.clipboard?navigator.clipboard.writeText(C.value):Promise.reject()).then(function(){{M.textContent='কপি হয়েছে'}}).catch(function(){{document.execCommand('copy');M.textContent='কপি হয়েছে'}})}};
+document.getElementById('sh').onclick=function(){{
+var us=[...document.querySelectorAll('figure img')].slice(0,5).map(function(i){{return i.src}});
+Promise.all(us.map(function(u,k){{return fetch(u).then(function(r){{return r.blob()}}).then(function(b){{return new File([b],'fountnews-'+k+'.png',{{type:'image/png'}})}})}})).then(function(fs){{
+if(navigator.canShare&&navigator.canShare({{files:fs}})){{try{{navigator.clipboard.writeText(C.value)}}catch(e){{}};return navigator.share({{files:fs,text:C.value}})}}
+M.textContent='এই ব্রাউজারে শেয়ার চলবে না, ছবি ডাউনলোড করে নিন'}}).catch(function(){{}})}};
+</script></body></html>"""
+    (OUT / "fb.html").write_text(page, encoding="utf-8")
+
 def main():
     day = dt.datetime.now(TZ).strftime("%Y-%m-%d")
     allp, used, pages = recent(fetch()), set(), []
@@ -262,6 +346,10 @@ def main():
         used.update(p["link"] for p in pick)
         pages.append((name, pick if (label is None or pick) else []))
     hot = render(day, pages, OUT / day)
+    try:
+        make_fb(day, pages, OUT / day)
+    except Exception as e:
+        print("facebook card skipped:", e)
     idx_path = OUT / "index.json"
     days = json.loads(idx_path.read_text(encoding="utf-8"))["days"] if idx_path.exists() else []
     days = [d for d in days if d["date"] != day]
