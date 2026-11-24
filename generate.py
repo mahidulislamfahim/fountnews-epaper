@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """FountNews ই-পেপার জেনারেটর: Blogger ফিড -> ৪ পাতার ছবি + PDF + docs/index.json"""
-import base64, datetime as dt, html, json, re, shutil, urllib.parse, urllib.request
+import base64, datetime as dt, html, json, re, shutil, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -62,8 +62,11 @@ def link_attr(p):
 def ttl(p):
     return f'<a href="{E(p["link"])}">{E(p["title"])}</a>'
 
+def alt_img(u):
+    return re.sub(r"/w900/", "/s1600/", u)
+
 def thumb(p):
-    return f'<img class="thumb" src="{E(p["img"])}" alt="">' if p["img"] else ""
+    return f'<img class="thumb" src="{E(p["img"])}" data-alt="{E(alt_img(p["img"]))}" alt="">' if p["img"] else ""
 
 def side_block(p):
     return f'<div class="sd" {link_attr(p)}>{thumb(p)}<h3>{ttl(p)}</h3><p>{E(clip(p["text"], 220))}</p></div>'
@@ -75,7 +78,7 @@ def col_item(p):
     return f'<div class="col" {link_attr(p)}>{thumb(p)}<h3>{ttl(p)}</h3><p>{E(clip(p["text"], 90))}</p></div>'
 
 def lead_block(p):
-    img = f'<img class="pic" src="{E(p["img"])}" alt="">' if p["img"] else ""
+    img = f'<img class="pic" src="{E(p["img"])}" data-alt="{E(alt_img(p["img"]))}" alt="">' if p["img"] else ""
     return (f'<div class="lead" {link_attr(p)}><h2>{ttl(p)}</h2>{img}'
             f'<p class="ls">{E(clip(p["text"], 520))}</p></div>')
 
@@ -132,7 +135,7 @@ FONTS = """@font-face{font-family:'SolaimanLipi';font-weight:400;font-display:bl
 CSS = """*{box-sizing:border-box}
 body{margin:0;background:#fff;color:#151515;font-family:'SolaimanLipi','Noto Sans Bengali',sans-serif;line-height:1.5}
 a{color:inherit;text-decoration:none}
-.sheet{width:900px;display:flex;flex-direction:column;overflow:hidden;padding:22px 30px 18px;background:#fff;break-after:page;break-inside:avoid;border-top:10px solid #c8102e}
+.sheet{width:900px;min-height:1450px;display:flex;flex-direction:column;overflow:hidden;padding:22px 30px 18px;background:#fff;break-after:page;break-inside:avoid;border-top:10px solid #c8102e}
 .sheet:last-child{break-after:auto}
 .mast{display:grid;grid-template-columns:1fr 1.7fr 1fr;align-items:center;gap:12px;padding-bottom:8px;border-bottom:3px solid #151515}
 .lg img{height:104px;display:block;margin:0 auto}
@@ -163,7 +166,7 @@ a{color:inherit;text-decoration:none}
 .thumb{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;margin-bottom:8px;background:#ddd}
 .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:14px;padding-top:12px;border-top:4px double #151515}
 .col h3{font-size:24px;-webkit-line-clamp:4}.col p{-webkit-line-clamp:3}
-.bot{flex:1;grid-template-rows:1fr;display:grid;grid-template-columns:1fr 1.7fr;gap:18px;align-items:stretch;border-top:4px double #151515;padding-top:12px}
+.bot{margin-top:auto;display:grid;grid-template-columns:1fr 1.7fr;gap:18px;align-items:stretch;border-top:4px double #151515;padding-top:12px}
 .bot.one{grid-template-columns:1fr}
 .adf{position:relative;overflow:hidden;border-radius:12px;padding:20px 24px;color:#fff;text-align:center;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:radial-gradient(circle at 12% 18%,rgba(255,255,255,.14),transparent 38%),radial-gradient(circle at 92% 88%,rgba(0,0,0,.28),transparent 45%),linear-gradient(125deg,#7d0719,#c8102e 60%,#8f0a1f);border:2px solid #f4d78d}
 .adf .wl{height:46px;filter:brightness(0) invert(1)}
@@ -171,11 +174,15 @@ a{color:inherit;text-decoration:none}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.chips span{border:1.5px solid rgba(255,255,255,.8);border-radius:999px;padding:3px 14px;font-size:15px;font-weight:600}
 .cta{background:linear-gradient(135deg,#ffe9ae,#d5ae5c);color:#5a0a14;font-weight:700;font-size:17px;padding:9px 22px;border-radius:9px}
 .fb{font-size:13px;color:#ffd7dc}
+.ph{aspect-ratio:16/10;background:#ecebeb;display:flex;align-items:center;justify-content:center;margin-bottom:8px}.ph img{width:46%;opacity:.45}
 .foot{display:flex;justify-content:space-between;margin-top:14px;padding-top:6px;border-top:2px solid #151515;font-size:14px;color:#666}
 .empty{text-align:center;color:#777;padding:90px 0;font-size:24px}"""
 
+def logo_uri():
+    return "data:image/png;base64," + base64.b64encode((ROOT / "logo.png").read_bytes()).decode()
+
 def page_html(day, pages):
-    logo = "data:image/png;base64," + base64.b64encode((ROOT / "logo.png").read_bytes()).decode()
+    logo = logo_uri()
     d = dt.date.fromisoformat(day)
     line = f"{DAYS[d.weekday()]}, {bn(d.day)} {MONTHS[d.month - 1]} {bn(d.year)}"
     secs = "".join(sheet(n, p, logo, line, i + 1, len(pages)) for i, (n, p) in enumerate(pages))
@@ -194,9 +201,22 @@ def render(day, pages, folder):
         pg.goto(tmp.resolve().as_uri(), wait_until="networkidle")
         pg.evaluate("document.fonts.ready")
         pg.wait_for_function("[...document.images].every(i=>i.complete)", timeout=30000)
-        H = pg.evaluate("Math.max(1500, ...[...document.querySelectorAll('.sheet')].map(s => s.offsetHeight))")
-        pg.add_style_tag(content=f".sheet{{height:{H}px!important}}")
+        pg.evaluate("""async (logo) => {
+            const load = (i, src) => new Promise(r => { i.onload = () => r(true); i.onerror = () => r(false); i.src = src; });
+            for (const i of [...document.querySelectorAll('img.pic, img.thumb')]) {
+                if (i.complete && i.naturalWidth) continue;
+                let ok = false;
+                if (i.dataset.alt) ok = await load(i, i.dataset.alt);
+                if (!ok) {
+                    const d = document.createElement('div');
+                    d.className = 'ph';
+                    d.innerHTML = '<img src="' + logo + '" alt="">';
+                    i.replaceWith(d);
+                }
+            }
+        }""", logo_uri())
         pg.wait_for_timeout(300)
+        heights = pg.evaluate("[...document.querySelectorAll('.sheet')].map(s => s.offsetHeight)")
         hot = pg.evaluate("""() => [...document.querySelectorAll('.sheet')].map(s => {
             const r = s.getBoundingClientRect();
             return [...s.querySelectorAll('[data-link]')].map(e => {
@@ -209,10 +229,27 @@ def render(day, pages, folder):
         for i in range(len(pages)):
             pg.locator(".sheet").nth(i).screenshot(path=str(folder / f"page-{i + 1}.png"))
         pg.emulate_media(media="print")
-        pg.pdf(path=str(folder / "fountnews-epaper.pdf"), width="900px", height=f"{H + 2}px", print_background=True,
-               margin=dict(top="0", right="0", bottom="0", left="0"))
+        parts = []
+        for i, h in enumerate(heights):
+            pg.evaluate("i => document.querySelectorAll('.sheet').forEach((s, k) => { s.style.display = k === i ? 'flex' : 'none'; })", i)
+            f = folder / f"_p{i}.pdf"
+            pg.pdf(path=str(f), width="900px", height=f"{h + 2}px", print_background=True, page_ranges="1",
+                   margin=dict(top="0", right="0", bottom="0", left="0"))
+            parts.append(f)
         b.close()
     tmp.unlink()
+    try:
+        from pypdf import PdfWriter
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "pypdf"])
+        from pypdf import PdfWriter
+    w = PdfWriter()
+    for f in parts:
+        w.append(str(f))
+    w.write(str(folder / "fountnews-epaper.pdf"))
+    w.close()
+    for f in parts:
+        f.unlink()
     return hot
 
 def main():
