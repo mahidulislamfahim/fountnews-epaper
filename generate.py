@@ -126,9 +126,11 @@ def sheet(name, posts, logo, dateline, no, total):
     return (f'<section class="sheet">{head}{body}'
             f'<div class="foot"><span>fountnews24.blogspot.com</span><span>{bn(no)} / {bn(total)}</span></div></section>')
 
+FONTS = """@font-face{font-family:'SolaimanLipi';font-weight:400;font-display:block;src:url(https://fonts.maateen.me/solaiman-lipi/solaimanlipi-normal-v1.0.woff2) format('woff2')}
+@font-face{font-family:'SolaimanLipi';font-weight:700;font-display:block;src:url(https://fonts.maateen.me/solaiman-lipi/solaimanlipi-bold-v1.0.woff2) format('woff2')}"""
+
 CSS = """@page{size:A3;margin:8mm}*{box-sizing:border-box}
-body{margin:0;background:#fff;color:#151515;font-family:'Noto Sans Bengali','Noto Serif Bengali',sans-serif;line-height:1.55}
-h2,h3,.band b,.mb b{font-family:'Noto Serif Bengali',serif}
+body{margin:0;background:#fff;color:#151515;font-family:'SolaimanLipi','Noto Sans Bengali',sans-serif;line-height:1.5}
 a{color:inherit;text-decoration:none}
 .sheet{width:900px;padding:22px 30px 18px;background:#fff;break-after:page;border-top:10px solid #c8102e}
 @media print{.sheet{width:auto;padding:0}}
@@ -136,38 +138,38 @@ a{color:inherit;text-decoration:none}
 .lg img{height:104px;display:block;margin:0 auto}
 .mb{font-size:15px;color:#444;line-height:1.5}.mb b{display:block;font-size:20px;color:#151515}.mb.r{text-align:right}
 .band{background:#c8102e;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:3px 14px;margin:6px 0 12px}
-.band b{font-size:24px;font-weight:800}.band i{font-style:normal;font-size:15px}
+.band b{font-size:24px;font-weight:700}.band i{font-style:normal;font-size:15px}
 .rib{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
 .rb{border:2px solid #9a9a9a;border-radius:12px;padding:9px 13px}
-.rb h3{margin:0 0 3px;font-size:19px;line-height:1.35;font-weight:800;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.rb p{margin:0;font-size:14px;color:#444;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rb h3{margin:0 0 3px;font-size:21px;line-height:1.35;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rb p{margin:0;font-size:16px;color:#444;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .adi{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;height:116px;padding:10px 20px;margin:0 0 14px;border-radius:10px;border:1.5px solid #c9a75b;background:linear-gradient(105deg,#063b2d,#116044 65%,#073c30)}
 .adi .art{position:absolute;right:26%;top:0;height:116px;width:300px;opacity:.3}
 .adi .ct{position:relative;z-index:2}.adi .tg{font-size:12px;color:#f4d78d;font-weight:700;letter-spacing:1px}
-.adi h2{font-size:26px;color:#fff;margin:3px 0;font-weight:800}.adi p{font-size:15px;color:#e1eadc;margin:0}
+.adi h2{font-size:28px;color:#fff;margin:3px 0;font-weight:700}.adi p{font-size:15px;color:#e1eadc;margin:0}
 .adi .ac{position:relative;z-index:2;display:flex;flex-direction:column;gap:8px}
 .adi .ac a{font-size:15px;font-weight:700;padding:8px 14px;border-radius:8px;white-space:nowrap;text-align:center}
 .adi .lib{background:linear-gradient(135deg,#ffe9ae,#d5ae5c);color:#16412f}.adi .dlb{background:#b90d20;color:#fff;border:1px solid #f4d78d}
 .main{display:grid;gap:16px;margin-bottom:14px}
 .g3{grid-template-columns:1fr 2.25fr 1fr}.g2{grid-template-columns:1fr 2.25fr}.g1{grid-template-columns:1fr}
 .main>div+div{border-left:1px solid #bdbdbd;padding-left:16px}
-.lead h2{font-size:42px;line-height:1.28;margin:0 0 10px;text-align:center;font-weight:800;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.lead h2{font-size:48px;line-height:1.28;margin:0 0 10px;text-align:center;font-weight:700;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .pic{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:#ddd}
-.ls{margin:10px 0 0;font-size:17px;color:#222;text-align:justify;column-count:2;column-gap:18px;column-rule:1px solid #ccc}
+.ls{margin:10px 0 0;font-size:19px;color:#222;text-align:justify;column-count:2;column-gap:18px;column-rule:1px solid #ccc}
 .sd{padding:0 0 12px;margin:0 0 12px;border-bottom:1px solid #cfcfcf}.sd:last-child{border:0}
 .sd h3,.col h3{margin:0 0 5px;font-weight:700;line-height:1.38;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-.sd h3{font-size:21px;-webkit-line-clamp:5}
-.sd p,.col p{margin:0;font-size:15px;color:#444;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.sd h3{font-size:24px;-webkit-line-clamp:5}
+.sd p,.col p{margin:0;font-size:17px;color:#444;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .thumb{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;margin-bottom:8px;background:#ddd}
 .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:14px;padding-top:12px;border-top:4px double #151515}
-.col h3{font-size:21px;-webkit-line-clamp:4}.col p{-webkit-line-clamp:3}
+.col h3{font-size:24px;-webkit-line-clamp:4}.col p{-webkit-line-clamp:3}
 .bot{display:grid;grid-template-columns:1fr 1.7fr;gap:18px;align-items:stretch;border-top:4px double #151515;padding-top:12px}
 .bot.one{grid-template-columns:1fr}
 .adf{position:relative;overflow:hidden;border-radius:12px;padding:20px 24px;color:#fff;text-align:center;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:radial-gradient(circle at 12% 18%,rgba(255,255,255,.14),transparent 38%),radial-gradient(circle at 92% 88%,rgba(0,0,0,.28),transparent 45%),linear-gradient(125deg,#7d0719,#c8102e 60%,#8f0a1f);border:2px solid #f4d78d}
 .adf .wl{height:46px;filter:brightness(0) invert(1)}
-.adf h2{margin:0;font-size:34px;font-weight:800;line-height:1.25}.adf .sb{margin:0;font-size:18px;color:#ffe9ae}
+.adf h2{margin:0;font-size:38px;font-weight:700;line-height:1.25}.adf .sb{margin:0;font-size:18px;color:#ffe9ae}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.chips span{border:1.5px solid rgba(255,255,255,.8);border-radius:999px;padding:3px 14px;font-size:15px;font-weight:600}
-.cta{background:linear-gradient(135deg,#ffe9ae,#d5ae5c);color:#5a0a14;font-weight:800;font-size:17px;padding:9px 22px;border-radius:9px}
+.cta{background:linear-gradient(135deg,#ffe9ae,#d5ae5c);color:#5a0a14;font-weight:700;font-size:17px;padding:9px 22px;border-radius:9px}
 .fb{font-size:13px;color:#ffd7dc}
 .foot{display:flex;justify-content:space-between;margin-top:14px;padding-top:6px;border-top:2px solid #151515;font-size:14px;color:#666}
 .empty{text-align:center;color:#777;padding:90px 0;font-size:24px}"""
@@ -178,8 +180,8 @@ def page_html(day, pages):
     line = f"{DAYS[d.weekday()]}, {bn(d.day)} {MONTHS[d.month - 1]} {bn(d.year)}"
     secs = "".join(sheet(n, p, logo, line, i + 1, len(pages)) for i, (n, p) in enumerate(pages))
     return ('<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><link rel="stylesheet" '
-            'href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@700;800&family=Noto+Sans+Bengali:wght@400;600&display=swap">'
-            f'<style>{CSS}</style></head><body>{secs}</body></html>')
+            'href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap">'
+            f'<style>{FONTS}{CSS}</style></head><body>{secs}</body></html>')
 
 def render(day, pages, folder):
     from playwright.sync_api import sync_playwright
